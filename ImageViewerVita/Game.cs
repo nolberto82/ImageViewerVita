@@ -12,6 +12,7 @@ using Sce.PlayStation.Core.Imaging;
 using SharpCompress.Archive;
 using SharpCompress.Common;
 using System.Collections.Generic;
+using System.Xml;
 
 namespace ImageViewerVita
 {
@@ -24,6 +25,8 @@ namespace ImageViewerVita
 		List<IArchiveEntry> Pages;
 		string[] directories;
 		string[] files;
+		int diry;
+		int filey;
 		int dirselection;
 		int fileselection;
 		int page;
@@ -130,7 +133,7 @@ namespace ImageViewerVita
 		void DrawFiles()
 		{
 			int x = 0;
-			int y = 0;			
+			int y = filey;			
 			
 			DrawRectangle(475, 5, 470, 534, 0xffffffff);
 					
@@ -142,7 +145,7 @@ namespace ImageViewerVita
 				selection = fileselection;
 			}
 			
-			DrawRectangle(x + 5, 5 + (selection * 40), 470, 40, 0xffffff00);
+			DrawRectangle(x + 5, 5 + (selection * 40) + filey, 470, 40, 0xffffff00);
 			
 			foreach (string s in files)
 			{
@@ -161,12 +164,6 @@ namespace ImageViewerVita
 			DrawRectangle(5, 5, 470, 534, 0xffffffff);
 					
 			int selection = dirselection;
-
-			if (state == State.FILE)
-			{
-				x = 470;
-				selection = fileselection;
-			}
 			
 			DrawRectangle(x + 5, 5 + (selection * 40), 470, 40, 0xffffff00);
 			
@@ -188,7 +185,7 @@ namespace ImageViewerVita
 		}
 		
 		void BrowseInput()
-		{
+		{		
 			if (pad.Buttons == GamePadButtons.Right)
 				state = State.FILE;
 			else if (pad.Buttons == GamePadButtons.Left)
@@ -198,17 +195,34 @@ namespace ImageViewerVita
 				if (state == State.DIR && dirselection < directories.Length - 1)
 				{
 					dirselection++;	
+					if (dirselection > directories.Length - 1)
+						dirselection = 0;
+					diry = -(dirselection * 40);
 					GetFiles();
 				} else if (state == State.FILE && fileselection < files.Length - 1)
+				{
 					fileselection++;
+					if (fileselection > files.Length - 1)
+						fileselection = 0;
+					filey = -(fileselection * 40);
+				}	
 			} else if (pad.ButtonsDown == GamePadButtons.Up)
 			{
 				if (state == State.DIR && dirselection > 0)
 				{
 					dirselection--;
+					if (dirselection < 0)
+						dirselection = directories.Length - 1;
+					diry += 40;
 					GetFiles();
 				} else if (state == State.FILE && fileselection > 0)
+				{
 					fileselection--;
+					if (fileselection < 0)
+						fileselection = files.Length - 1;
+					filey += 40;
+				}
+				
 			}
 				
 			if ((pad.ButtonsDown & GamePadButtons.Cross) > 0)
